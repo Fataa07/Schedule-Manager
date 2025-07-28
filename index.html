@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jadwal Produktif Fata - Full Features</title>
-    
-    <script src="https://unpkg.com/table2excel@1.0.4/dist/table2excel.min.js"></script>
-    
+    <title>Jadwal Produktif Fata (Enhanced)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <style>
         /* General Styling */
         body {
@@ -44,36 +43,72 @@
             flex-grow: 1;
             padding: 2rem;
             display: flex;
-            flex-direction: column; /* Ubah jadi column untuk layout vertikal */
-            align-items: center; /* Pusatkan secara horizontal */
-            gap: 2rem; /* Jarak antar section */
+            flex-direction: column;
+            gap: 2rem;
         }
 
-        .schedule-container, .pomodoro-container, .todo-container {
+        .container {
             background: rgba(255, 255, 255, 0.08);
             border-radius: 15px;
-            padding: 2.5rem;
+            padding: 2rem;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            max-width: 1200px;
-            width: 90%; /* Sesuaikan lebar */
             backdrop-filter: blur(5px);
             border: 1px solid rgba(255, 255, 255, 0.2);
-            position: relative; /* Untuk posisi tombol tambah/hapus */
         }
 
-        h2 {
+        .container h2 {
             text-align: center;
             color: #a7d9ff;
-            font-size: 2rem;
+            font-size: 1.8rem;
             margin-bottom: 1.5rem;
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
         }
 
+        /* Navigation Tabs */
+        .tab-navigation {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+            padding: 0.8rem 2rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(45deg, #007bff, #00c6ff);
+            color: #fff;
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
         /* Table Styling */
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 1.5rem;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 10px;
             overflow: hidden;
@@ -92,9 +127,6 @@
             font-weight: bold;
             text-transform: uppercase;
             font-size: 0.95rem;
-            position: sticky;
-            top: 0;
-            z-index: 10;
         }
 
         td {
@@ -106,73 +138,208 @@
             background-color: rgba(0, 0, 0, 0.4);
         }
 
-        /* Editable cells */
         td[contenteditable="true"]:focus {
             outline: 2px solid #a7d9ff;
             background-color: rgba(255, 255, 255, 0.15);
         }
 
-        /* Button Styling */
-        .btn-group {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 1.5rem;
+        .time-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e0e0e0;
+            padding: 0.5rem;
+            border-radius: 5px;
+            width: 100%;
         }
 
-        button {
+        /* Button Styling */
+        .btn {
             padding: 0.8rem 2rem;
             background: linear-gradient(45deg, #007bff, #00c6ff);
             color: #fff;
             border: none;
             border-radius: 8px;
-            font-size: 1.1rem;
+            font-size: 1rem;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 5px 15px rgba(0, 123, 255, 0.4);
+            margin: 0.5rem;
         }
 
-        button.excel-btn {
-            background: linear-gradient(45deg, #28a745, #218838); /* Warna hijau untuk Excel */
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
-        }
-        button.excel-btn:hover {
-            background: linear-gradient(45deg, #1e7e34, #1c7430);
-            box-shadow: 0 7px 20px rgba(40, 167, 69, 0.6);
-        }
-
-        button.add-row-btn {
-            background: linear-gradient(45deg, #6f42c1, #8a2be2); /* Warna ungu */
-            box-shadow: 0 5px 15px rgba(111, 66, 193, 0.4);
-        }
-        button.add-row-btn:hover {
-            background: linear-gradient(45deg, #5a359c, #7b1cd1);
-            box-shadow: 0 7px 20px rgba(111, 66, 193, 0.6);
-        }
-
-        button.delete-row-btn {
-            background: linear-gradient(45deg, #dc3545, #c82333); /* Warna merah */
-            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
-        }
-        button.delete-row-btn:hover {
-            background: linear-gradient(45deg, #bd2130, #b11f2c);
-            box-shadow: 0 7px 20px rgba(220, 53, 69, 0.6);
-        }
-        
-        button:hover {
+        .btn:hover {
+            background: linear-gradient(45deg, #0056b3, #0099cc);
+            box-shadow: 0 7px 20px rgba(0, 123, 255, 0.6);
             transform: translateY(-2px);
         }
 
-        button:active {
-            transform: translateY(0);
+        .btn-danger {
+            background: linear-gradient(45deg, #dc3545, #ff6b7a);
         }
 
-        .notes {
+        .btn-danger:hover {
+            background: linear-gradient(45deg, #c82333, #ff5565);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #28a745, #4caf50);
+        }
+
+        .btn-success:hover {
+            background: linear-gradient(45deg, #218838, #45a049);
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        /* Pomodoro Timer */
+        .pomodoro-container {
             text-align: center;
-            font-style: italic;
+        }
+
+        .timer-display {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #a7d9ff;
+            margin: 2rem 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .timer-presets {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .preset-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .preset-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Todo List */
+        .todo-input {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .todo-input input {
+            flex: 1;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 1rem;
+        }
+
+        .todo-input input::placeholder {
             color: #b0b0b0;
-            font-size: 0.9rem;
-            margin-top: 1rem;
+        }
+
+        .todo-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .todo-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .todo-item input[type="checkbox"] {
+            margin-right: 1rem;
+            transform: scale(1.2);
+        }
+
+        .todo-text {
+            flex: 1;
+            color: #e0e0e0;
+        }
+
+        .todo-delete {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .todo-delete:hover {
+            background: #c82333;
+        }
+
+        /* Status indicators */
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 0.5rem;
+        }
+
+        .status-work { background-color: #ff6b6b; }
+        .status-break { background-color: #4ecdc4; }
+        .status-stopped { background-color: #95a5a6; }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .timer-display {
+                font-size: 3rem;
+            }
+            
+            .tab-navigation {
+                flex-direction: column;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .timer-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .todo-input {
+                flex-direction: column;
+            }
         }
 
         footer {
@@ -184,461 +351,435 @@
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             margin-top: auto;
         }
-
-        /* Pomodoro Timer Styling */
-        .pomodoro-container {
-            text-align: center;
-            padding: 2.5rem;
-        }
-
-        #timer {
-            font-size: 4rem;
-            font-weight: bold;
-            color: #00c6ff;
-            margin-bottom: 1.5rem;
-            text-shadow: 2px 2px 5px rgba(0, 198, 255, 0.3);
-        }
-
-        .pomodoro-controls button {
-            margin: 0 0.5rem;
-            padding: 0.7rem 1.5rem;
-            font-size: 1rem;
-        }
-        button.start-btn {
-            background: linear-gradient(45deg, #28a745, #218838);
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
-        }
-        button.start-btn:hover {
-            background: linear-gradient(45deg, #1e7e34, #1c7430);
-            box-shadow: 0 7px 20px rgba(40, 167, 69, 0.6);
-        }
-        button.pause-btn {
-            background: linear-gradient(45deg, #ffc107, #e0a800);
-            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
-        }
-        button.pause-btn:hover {
-            background: linear-gradient(45deg, #e0a800, #c79100);
-            box-shadow: 0 7px 20px rgba(255, 193, 7, 0.6);
-        }
-        button.reset-btn {
-            background: linear-gradient(45deg, #6c757d, #5a6268);
-            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
-        }
-        button.reset-btn:hover {
-            background: linear-gradient(45deg, #5a6268, #4e555b);
-            box-shadow: 0 7px 20px rgba(108, 117, 125, 0.6);
-        }
-
-        /* To-Do List Styling */
-        .todo-container {
-            padding: 2.5rem;
-        }
-
-        .todo-input-group {
-            display: flex;
-            margin-bottom: 1.5rem;
-            gap: 10px;
-        }
-
-        .todo-input-group input[type="text"] {
-            flex-grow: 1;
-            padding: 0.8rem 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            background-color: rgba(0, 0, 0, 0.3);
-            color: #e0e0e0;
-            font-size: 1rem;
-            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .todo-input-group input[type="text"]::placeholder {
-            color: #b0b0b0;
-        }
-
-        .todo-input-group button {
-            padding: 0.8rem 1.5rem;
-            background: linear-gradient(45deg, #fd7e14, #ffc107); /* Warna oranye */
-            box-shadow: 0 5px 15px rgba(253, 126, 20, 0.4);
-        }
-        .todo-input-group button:hover {
-            background: linear-gradient(45deg, #e66a0d, #e0a800);
-            box-shadow: 0 7px 20px rgba(253, 126, 20, 0.6);
-        }
-
-        #todo-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        #todo-list li {
-            background: rgba(0, 0, 0, 0.25);
-            padding: 0.8rem 1.2rem;
-            margin-bottom: 0.7rem;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background-color 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-        }
-
-        #todo-list li.completed {
-            text-decoration: line-through;
-            color: #999;
-            background-color: rgba(0, 0, 0, 0.15);
-        }
-
-        #todo-list li span {
-            flex-grow: 1;
-            cursor: pointer;
-        }
-
-        #todo-list li .delete-btn {
-            background: none;
-            border: none;
-            color: #dc3545;
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 5px;
-            transition: background-color 0.2s ease;
-            box-shadow: none; /* Override button shadow */
-        }
-        #todo-list li .delete-btn:hover {
-            background-color: rgba(220, 53, 69, 0.2);
-            transform: none; /* Override button transform */
-            box-shadow: none;
-        }
-        #todo-list li .delete-btn:active {
-            transform: none; /* Override button transform */
-            box-shadow: none;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 900px) {
-            .schedule-container, .pomodoro-container, .todo-container {
-                padding: 1.5rem;
-            }
-            th, td {
-                padding: 0.8rem;
-                font-size: 0.85rem;
-            }
-            header h1 {
-                font-size: 2rem;
-            }
-            #timer {
-                font-size: 3rem;
-            }
-        }
-
-        @media (max-width: 768px) {
-            body {
-                font-size: 0.95rem;
-            }
-            main {
-                padding: 1rem;
-            }
-            .schedule-container, .pomodoro-container, .todo-container {
-                padding: 1rem;
-            }
-            table {
-                display: block;
-                overflow-x: auto;
-                white-space: nowrap;
-            }
-            th, td {
-                min-width: 100px; /* Sedikit lebih kecil untuk mobile */
-            }
-            .btn-group {
-                flex-direction: column; /* Tombol jadi vertikal di mobile */
-                gap: 0.8rem;
-            }
-            .btn-group button {
-                width: 100%;
-            }
-        }
-
-        @media (max-width: 480px) {
-            header h1 {
-                font-size: 1.7rem;
-            }
-            header p {
-                font-size: 1rem;
-            }
-            button, .pomodoro-controls button, .todo-input-group button {
-                padding: 0.7rem 1.5rem;
-                font-size: 1rem;
-            }
-            .notes {
-                font-size: 0.8rem;
-            }
-            #timer {
-                font-size: 2.5rem;
-            }
-            .todo-input-group {
-                flex-direction: column;
-                gap: 0.8rem;
-            }
-        }
     </style>
 </head>
 <body>
     <header>
-        <h1>Jadwal Mingguan Mahasiswa Baru Geologi</h1>
-        <p>Halo Fata, ini jadwalmu biar tetap produktif & chill!</p>
+        <h1>Jadwal Produktif Fata (Enhanced)</h1>
+        <p>Jadwal lengkap dengan Pomodoro Timer & Todo List!</p>
     </header>
 
     <main>
-        <section class="schedule-container">
-            <h2>Rencana Mingguan</h2>
-            <div id="schedule-table-wrapper">
-                <table id="scheduleTable">
-                    <thead>
-                        <tr>
-                            <th>Waktu</th>
-                            <th>Senin</th>
-                            <th>Selasa</th>
-                            <th>Rabu</th>
-                            <th>Kamis</th>
-                            <th>Jumat</th>
-                            <th>Sabtu</th>
-                            <th>Minggu</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td contenteditable="true">Pagi (08.00-12.00)</td>
-                            <td contenteditable="true">Kuliah</td>
-                            <td contenteditable="true">Kuliah</td>
-                            <td contenteditable="true">Kuliah</td>
-                            <td contenteditable="true">Kuliah</td>
-                            <td contenteditable="true">Kuliah</td>
-                            <td contenteditable="true">Belajar Mandiri (2 jam)</td>
-                            <td contenteditable="true">Santai/Hobi</td>
-                        </tr>
-                        <tr>
-                            <td contenteditable="true">Siang (12.00-16.00)</td>
-                            <td contenteditable="true">Istirahat/Makan & Belajar Mandiri (1.5 jam)</td>
-                            <td contenteditable="true">Istirahat/Makan & Belajar Mandiri (1.5 jam)</td>
-                            <td contenteditable="true">Istirahat/Makan & Belajar Mandiri (1.5 jam)</td>
-                            <td contenteditable="true">Istirahat/Makan & Belajar Mandiri (1.5 jam)</td>
-                            <td contenteditable="true">Istirahat/Makan & Belajar Mandiri (2 jam)</td>
-                            <td contenteditable="true">Santai/Sosial (Billiard Opsional)</td>
-                            <td contenteditable="true">Santai/Sosial (Billiard Opsional)</td>
-                        </tr>
-                        <tr>
-                            <td contenteditable="true">Sore (16.00-19.00)</td>
-                            <td contenteditable="true">Santai/Sosial</td>
-                            <td contenteditable="true">Santai/Sosial</td>
-                            <td contenteditable="true">Santai/Sosial</td>
-                            <td contenteditable="true">Santai/Sosial</td>
-                            <td contenteditable="true">Santai/Sosial</td>
-                            <td contenteditable="true">Billiard (1 sesi)</td>
-                            <td contenteditable="true">Billiard (1 sesi)</td>
-                        </tr>
-                        <tr>
-                            <td contenteditable="true">Malam (19.00-Selesai)</td>
-                            <td contenteditable="true">Persiapan Besok & Istirahat</td>
-                            <td contenteditable="true">Persiapan Besok & Istirahat</td>
-                            <td contenteditable="true">Persiapan Besok & Istirahat</td>
-                            <td contenteditable="true">Persiapan Besok & Istirahat</td>
-                            <td contenteditable="true">Persiapan Besok & Istirahat</td>
-                            <td contenteditable="true">Santai/Sosial</td>
-                            <td contenteditable="true">Santai/Sosial</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="btn-group">
-                <button id="addRowBtn" class="add-row-btn">Tambah Baris</button>
-                <button id="deleteRowBtn" class="delete-row-btn">Hapus Baris Terakhir</button>
-                <button id="exportExcelBtn" class="excel-btn">Ekspor Jadwal ke Excel</button>
-            </div>
-            <p class="notes">*Klik pada sel tabel untuk mengedit langsung. Tombol edit/hapus baris di bawah tabel.</p>
-        </section>
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-btn active" onclick="showTab('schedule')">📅 Jadwal</button>
+            <button class="tab-btn" onclick="showTab('pomodoro')">🍅 Pomodoro</button>
+            <button class="tab-btn" onclick="showTab('todo')">✅ Todo List</button>
+        </div>
 
-        <section class="pomodoro-container">
-            <h2>Pomodoro Timer</h2>
-            <div id="timer">25:00</div>
-            <div class="pomodoro-controls">
-                <button id="startPauseBtn" class="start-btn">Mulai</button>
-                <button id="resetBtn" class="reset-btn">Reset</button>
+        <!-- Schedule Tab -->
+        <div id="schedule" class="tab-content active">
+            <div class="container">
+                <h2>Rencana Mingguan</h2>
+                <div class="table-container" id="schedule-table-wrapper">
+                    <table id="scheduleTable">
+                        <thead>
+                            <tr>
+                                <th>Waktu</th>
+                                <th>Senin</th>
+                                <th>Selasa</th>
+                                <th>Rabu</th>
+                                <th>Kamis</th>
+                                <th>Jumat</th>
+                                <th>Sabtu</th>
+                                <th>Minggu</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scheduleBody">
+                            <tr>
+                                <td><input type="text" class="time-input" value="08:00-12:00" /></td>
+                                <td contenteditable="true">Kuliah</td>
+                                <td contenteditable="true">Kuliah</td>
+                                <td contenteditable="true">Kuliah</td>
+                                <td contenteditable="true">Kuliah</td>
+                                <td contenteditable="true">Kuliah</td>
+                                <td contenteditable="true">Belajar Mandiri</td>
+                                <td contenteditable="true">Santai/Hobi</td>
+                                <td><button class="btn btn-danger" onclick="deleteRow(this)">Hapus</button></td>
+                            </tr>
+                            <tr>
+                                <td><input type="text" class="time-input" value="12:00-16:00" /></td>
+                                <td contenteditable="true">Istirahat & Belajar</td>
+                                <td contenteditable="true">Istirahat & Belajar</td>
+                                <td contenteditable="true">Istirahat & Belajar</td>
+                                <td contenteditable="true">Istirahat & Belajar</td>
+                                <td contenteditable="true">Istirahat & Belajar</td>
+                                <td contenteditable="true">Santai/Sosial</td>
+                                <td contenteditable="true">Santai/Sosial</td>
+                                <td><button class="btn btn-danger" onclick="deleteRow(this)">Hapus</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="button-group">
+                    <button class="btn" onclick="addRow()">➕ Tambah Baris</button>
+                    <button class="btn btn-success" onclick="exportToExcel()">📊 Export ke Excel</button>
+                    <button class="btn" onclick="saveData()">💾 Simpan Data</button>
+                    <button class="btn" onclick="loadData()">📂 Muat Data</button>
+                </div>
             </div>
-            <p class="notes">*25 menit kerja, 5 menit istirahat. Fokus!</p>
-        </section>
+        </div>
 
-        <section class="todo-container">
-            <h2>To-Do List</h2>
-            <div class="todo-input-group">
-                <input type="text" id="todoInput" placeholder="Tambah tugas baru...">
-                <button id="addTodoBtn">Tambah Tugas</button>
+        <!-- Pomodoro Tab -->
+        <div id="pomodoro" class="tab-content">
+            <div class="container pomodoro-container">
+                <h2>Pomodoro Timer</h2>
+                <div class="timer-display" id="timerDisplay">25:00</div>
+                <div class="timer-presets">
+                    <button class="preset-btn" onclick="setTimer(25)">Work (25m)</button>
+                    <button class="preset-btn" onclick="setTimer(5)">Short Break (5m)</button>
+                    <button class="preset-btn" onclick="setTimer(15)">Long Break (15m)</button>
+                </div>
+                <div class="timer-controls">
+                    <button class="btn btn-success" onclick="startTimer()">▶️ Mulai</button>
+                    <button class="btn" onclick="pauseTimer()">⏸️ Pause</button>
+                    <button class="btn btn-danger" onclick="resetTimer()">🔄 Reset</button>
+                </div>
+                <div id="timerStatus">Status: Berhenti <span class="status-indicator status-stopped"></span></div>
             </div>
-            <ul id="todo-list">
-                </ul>
-            <p class="notes">*Klik tugas untuk menandai selesai. Klik (x) untuk hapus.</p>
-        </section>
+        </div>
+
+        <!-- Todo Tab -->
+        <div id="todo" class="tab-content">
+            <div class="container">
+                <h2>Todo List</h2>
+                <div class="todo-input">
+                    <input type="text" id="todoInput" placeholder="Tambahkan tugas baru..." />
+                    <button class="btn" onclick="addTodo()">➕ Tambah</button>
+                </div>
+                <ul class="todo-list" id="todoList"></ul>
+                <div class="button-group">
+                    <button class="btn" onclick="clearCompleted()">🗑️ Hapus Selesai</button>
+                    <button class="btn btn-success" onclick="exportTodoToExcel()">📊 Export Todo</button>
+                </div>
+            </div>
+        </div>
     </main>
 
     <footer>
-        <p>&copy; 2025 Jadwal Produktif Fata. Dibuat dengan semangat mahasiswa Geologi UPN!</p>
+        <p>&copy; 2025 Jadwal Produktif Fata Enhanced. Dibuat dengan semangat mahasiswa Geologi UPN!</p>
     </footer>
 
     <script>
-        // --- Schedule Table Logic ---
-        const scheduleTable = document.getElementById('scheduleTable');
-        const addRowBtn = document.getElementById('addRowBtn');
-        const deleteRowBtn = document.getElementById('deleteRowBtn');
-        const exportExcelBtn = document.getElementById('exportExcelBtn');
+        // Global variables
+        let timerInterval;
+        let currentTime = 1500; // 25 minutes in seconds
+        let isRunning = false;
+        let isWorkSession = true;
 
-        // Fungsi untuk menambah baris baru
-        addRowBtn.addEventListener('click', () => {
-            const newRow = scheduleTable.insertRow(-1); // Insert at the end
-            const numCols = scheduleTable.rows[0].cells.length;
+        // Schedule data storage
+        let scheduleData = [];
+        let todoData = [];
 
-            for (let i = 0; i < numCols; i++) {
-                const newCell = newRow.insertCell(i);
-                newCell.contentEditable = 'true';
-                newCell.textContent = 'Isi disini...'; // Default text
+        // Audio context for alarm
+        let audioContext;
+        let oscillator;
+
+        // Initialize audio context
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
             }
-        });
-
-        // Fungsi untuk menghapus baris terakhir
-        deleteRowBtn.addEventListener('click', () => {
-            const rowCount = scheduleTable.rows.length;
-            if (rowCount > 2) { // Keep header (row 0) and at least one data row (row 1)
-                scheduleTable.deleteRow(rowCount - 1);
-            } else {
-                alert('Tidak bisa menghapus semua baris data! Minimal harus ada satu baris.');
-            }
-        });
-
-        // Fungsi untuk ekspor ke Excel
-        exportExcelBtn.addEventListener('click', () => {
-            // `table2excel` akan bekerja pada elemen <table>
-            // Pastikan `table2excel.min.js` sudah diload di <head>
-            const exporter = new Table2Excel();
-            exporter.export(document.querySelectorAll("#scheduleTable"), "Jadwal_Fata"); // Export by ID
-        });
-
-
-        // --- Pomodoro Timer Logic ---
-        const timerDisplay = document.getElementById('timer');
-        const startPauseBtn = document.getElementById('startPauseBtn');
-        const resetBtn = document.getElementById('resetBtn');
-
-        let countdown;
-        let timeLeft = 25 * 60; // 25 minutes for work session
-        let isPaused = true;
-        let isWorkSession = true; // true for work, false for break
-
-        // Audio for alarm
-        const alarmSound = new Audio('https://www.soundjay.com/buttons/beep-07a.mp3'); // URL suara alarm
-
-        function displayTimeLeft(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            const remainderSeconds = seconds % 60;
-            const display = `${minutes < 10 ? '0' : ''}${minutes}:${remainderSeconds < 10 ? '0' : ''}${remainderSeconds}`;
-            timerDisplay.textContent = display;
-            document.title = display + ' - Pomodoro'; // Update browser tab title
         }
 
-        function timer() {
-            countdown = setInterval(() => {
-                timeLeft--;
-                if (timeLeft < 0) {
-                    clearInterval(countdown);
-                    alarmSound.play(); // Play alarm
-                    alert(isWorkSession ? 'Waktunya istirahat!' : 'Waktunya kerja lagi!');
-                    toggleSession();
+        // Play alarm sound
+        function playAlarm() {
+            initAudio();
+            
+            oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            
+            oscillator.start();
+            
+            // Play for 2 seconds
+            setTimeout(() => {
+                oscillator.stop();
+            }, 2000);
+        }
+
+        // Tab switching
+        function showTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab-btn');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Schedule functions
+        function addRow() {
+            const tbody = document.getElementById('scheduleBody');
+            const newRow = tbody.insertRow();
+            
+            newRow.innerHTML = `
+                <td><input type="text" class="time-input" value="00:00-00:00" /></td>
+                <td contenteditable="true">Kegiatan baru</td>
+                <td contenteditable="true">Kegiatan baru</td>
+                <td contenteditable="true">Kegiatan baru</td>
+                <td contenteditable="true">Kegiatan baru</td>
+                <td contenteditable="true">Kegiatan baru</td>
+                <td contenteditable="true">Kegiatan baru</td>
+                <td contenteditable="true">Kegiatan baru</td>
+                <td><button class="btn btn-danger" onclick="deleteRow(this)">Hapus</button></td>
+            `;
+        }
+
+        function deleteRow(button) {
+            const row = button.closest('tr');
+            row.remove();
+        }
+
+        function saveData() {
+            const table = document.getElementById('scheduleTable');
+            const data = [];
+            
+            for (let i = 1; i < table.rows.length; i++) {
+                const row = table.rows[i];
+                const rowData = [];
+                for (let j = 0; j < row.cells.length - 1; j++) {
+                    if (j === 0) {
+                        rowData.push(row.cells[j].querySelector('input').value);
+                    } else {
+                        rowData.push(row.cells[j].textContent);
+                    }
                 }
-                displayTimeLeft(timeLeft);
-            }, 1000);
+                data.push(rowData);
+            }
+            
+            scheduleData = data;
+            localStorage.setItem('scheduleData', JSON.stringify(data));
+            alert('Data berhasil disimpan!');
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('scheduleData');
+            if (saved) {
+                scheduleData = JSON.parse(saved);
+                const tbody = document.getElementById('scheduleBody');
+                tbody.innerHTML = '';
+                
+                scheduleData.forEach(rowData => {
+                    const newRow = tbody.insertRow();
+                    newRow.innerHTML = `
+                        <td><input type="text" class="time-input" value="${rowData[0]}" /></td>
+                        <td contenteditable="true">${rowData[1]}</td>
+                        <td contenteditable="true">${rowData[2]}</td>
+                        <td contenteditable="true">${rowData[3]}</td>
+                        <td contenteditable="true">${rowData[4]}</td>
+                        <td contenteditable="true">${rowData[5]}</td>
+                        <td contenteditable="true">${rowData[6]}</td>
+                        <td contenteditable="true">${rowData[7]}</td>
+                        <td><button class="btn btn-danger" onclick="deleteRow(this)">Hapus</button></td>
+                    `;
+                });
+                alert('Data berhasil dimuat!');
+            } else {
+                alert('Tidak ada data tersimpan!');
+            }
+        }
+
+        function exportToExcel() {
+            const table = document.getElementById('scheduleTable');
+            const data = [];
+            
+            // Header
+            const headers = ['Waktu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+            data.push(headers);
+            
+            // Data rows
+            for (let i = 1; i < table.rows.length; i++) {
+                const row = table.rows[i];
+                const rowData = [];
+                for (let j = 0; j < row.cells.length - 1; j++) {
+                    if (j === 0) {
+                        rowData.push(row.cells[j].querySelector('input').value);
+                    } else {
+                        rowData.push(row.cells[j].textContent);
+                    }
+                }
+                data.push(rowData);
+            }
+            
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Jadwal');
+            
+            XLSX.writeFile(wb, 'jadwal_produktif_fata.xlsx');
+        }
+
+        // Pomodoro functions
+        function setTimer(minutes) {
+            currentTime = minutes * 60;
+            updateDisplay();
+            if (minutes === 25) {
+                isWorkSession = true;
+            } else {
+                isWorkSession = false;
+            }
+        }
+
+        function updateDisplay() {
+            const minutes = Math.floor(currentTime / 60);
+            const seconds = currentTime % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
 
         function startTimer() {
-            if (isPaused) {
-                isPaused = false;
-                startPauseBtn.textContent = 'Jeda';
-                startPauseBtn.classList.remove('start-btn');
-                startPauseBtn.classList.add('pause-btn');
-                timer();
-            } else {
-                isPaused = true;
-                startPauseBtn.textContent = 'Lanjutkan';
-                startPauseBtn.classList.remove('pause-btn');
-                startPauseBtn.classList.add('start-btn');
-                clearInterval(countdown);
+            if (!isRunning) {
+                isRunning = true;
+                updateStatus();
+                timerInterval = setInterval(() => {
+                    currentTime--;
+                    updateDisplay();
+                    
+                    if (currentTime <= 0) {
+                        playAlarm();
+                        resetTimer();
+                        alert(isWorkSession ? 'Waktu kerja selesai! Saatnya istirahat.' : 'Waktu istirahat selesai! Saatnya kembali bekerja.');
+                    }
+                }, 1000);
             }
+        }
+
+        function pauseTimer() {
+            isRunning = false;
+            clearInterval(timerInterval);
+            updateStatus();
         }
 
         function resetTimer() {
-            clearInterval(countdown);
-            isPaused = true;
-            isWorkSession = true;
-            timeLeft = 25 * 60;
-            displayTimeLeft(timeLeft);
-            startPauseBtn.textContent = 'Mulai';
-            startPauseBtn.classList.remove('pause-btn');
-            startPauseBtn.classList.add('start-btn');
+            isRunning = false;
+            clearInterval(timerInterval);
+            currentTime = 1500; // Reset to 25 minutes
+            updateDisplay();
+            updateStatus();
         }
 
-        function toggleSession() {
-            isWorkSession = !isWorkSession;
-            timeLeft = isWorkSession ? (25 * 60) : (5 * 60); // 25 work, 5 break
-            displayTimeLeft(timeLeft);
-            isPaused = true;
-            startPauseBtn.textContent = 'Mulai';
-            startPauseBtn.classList.remove('pause-btn');
-            startPauseBtn.classList.add('start-btn');
-        }
-
-        startPauseBtn.addEventListener('click', startTimer);
-        resetBtn.addEventListener('click', resetTimer);
-
-        // Initial display
-        displayTimeLeft(timeLeft);
-
-
-        // --- To-Do List Logic ---
-        const todoInput = document.getElementById('todoInput');
-        const addTodoBtn = document.getElementById('addTodoBtn');
-        const todoList = document.getElementById('todo-list');
-
-        function addTodoItem() {
-            const todoText = todoInput.value.trim();
-            if (todoText === '') {
-                alert('Tugas tidak boleh kosong!');
-                return;
+        function updateStatus() {
+            const statusEl = document.getElementById('timerStatus');
+            const indicator = statusEl.querySelector('.status-indicator');
+            
+            if (isRunning) {
+                if (isWorkSession) {
+                    statusEl.innerHTML = 'Status: Bekerja <span class="status-indicator status-work"></span>';
+                } else {
+                    statusEl.innerHTML = 'Status: Istirahat <span class="status-indicator status-break"></span>';
+                }
+            } else {
+                statusEl.innerHTML = 'Status: Berhenti <span class="status-indicator status-stopped"></span>';
             }
-
-            const listItem = document.createElement('li');
-            listItem.innerHTML = `
-                <span>${todoText}</span>
-                <button class="delete-btn">x</button>
-            `;
-
-            // Tandai selesai saat diklik
-            listItem.querySelector('span').addEventListener('click', () => {
-                listItem.classList.toggle('completed');
-            });
-
-            // Hapus item saat tombol (x) diklik
-            listItem.querySelector('.delete-btn').addEventListener('click', () => {
-                todoList.removeChild(listItem);
-            });
-
-            todoList.appendChild(listItem);
-            todoInput.value = ''; // Clear input
         }
 
-        addTodoBtn.addEventListener('click', addTodoItem);
+        // Todo functions
+        function addTodo() {
+            const input = document.getElementById('todoInput');
+            const text = input.value.trim();
+            
+            if (text === '') return;
+            
+            const todo = {
+                id: Date.now(),
+                text: text,
+                completed: false
+            };
+            
+            todoData.push(todo);
+            renderTodos();
+            input.value = '';
+            saveTodos();
+        }
 
-        // Tambah tugas juga dengan menekan Enter di input
-        todoInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                addTodoItem();
+        function renderTodos() {
+            const todoList = document.getElementById('todoList');
+            todoList.innerHTML = '';
+            
+            todoData.forEach(todo => {
+                const li = document.createElement('li');
+                li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+                li.innerHTML = `
+                    <input type="checkbox" ${todo.completed ? 'checked' : ''} 
+                           onchange="toggleTodo(${todo.id})">
+                    <span class="todo-text">${todo.text}</span>
+                    <button class="todo-delete" onclick="deleteTodo(${todo.id})">Hapus</button>
+                `;
+                todoList.appendChild(li);
+            });
+        }
+
+        function toggleTodo(id) {
+            const todo = todoData.find(t => t.id === id);
+            if (todo) {
+                todo.completed = !todo.completed;
+                renderTodos();
+                saveTodos();
             }
+        }
+
+        function deleteTodo(id) {
+            todoData = todoData.filter(t => t.id !== id);
+            renderTodos();
+            saveTodos();
+        }
+
+        function clearCompleted() {
+            todoData = todoData.filter(t => !t.completed);
+            renderTodos();
+            saveTodos();
+        }
+
+        function saveTodos() {
+            localStorage.setItem('todoData', JSON.stringify(todoData));
+        }
+
+        function loadTodos() {
+            const saved = localStorage.getItem('todoData');
+            if (saved) {
+                todoData = JSON.parse(saved);
+                renderTodos();
+            }
+        }
+
+        function exportTodoToExcel() {
+            const data = [['Task', 'Status', 'Date Created']];
+            
+            todoData.forEach(todo => {
+                data.push([
+                    todo.text,
+                    todo.completed ? 'Completed' : 'Pending',
+                    new Date(todo.id).toLocaleDateString()
+                ]);
+            });
+            
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Todo List');
+            
+            XLSX.writeFile(wb, 'todo_list_fata.xlsx');
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDisplay();
+            updateStatus();
+            loadTodos();
+            
+            // Enter key support for todo input
+            document.getElementById('todoInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addTodo();
+                }
+            });
         });
     </script>
 </body>
